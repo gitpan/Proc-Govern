@@ -1,7 +1,7 @@
 package Proc::Govern;
 
-our $DATE = '2014-12-11'; # DATE
-our $VERSION = '0.14'; # VERSION
+our $DATE = '2014-12-12'; # DATE
+our $VERSION = '0.15'; # VERSION
 
 use 5.010001;
 use strict;
@@ -318,8 +318,8 @@ sub govern_process {
                 if (ref($lwhigh) eq 'CODE') {
                     $is_high = $lwhigh->($h);
                 } else {
-                    require Sys::LoadAvg;
-                    my @load = Sys::LoadAvg::loadavg();
+                    require Unix::Uptime;
+                    my @load = Unix::Uptime->load();
                     $is_high = $load[0] >= $lwhigh;
                 }
                 if ($is_high) {
@@ -331,8 +331,8 @@ sub govern_process {
                 if (ref($lwlow) eq 'CODE') {
                     $is_low = $lwlow->($h);
                 } else {
-                    require Sys::LoadAvg;
-                    my @load = Sys::LoadAvg::loadavg();
+                    require Unix::Uptime;
+                    my @load = Unix::Uptime->load();
                     $is_low = $load[0] <= $lwlow;
                 }
                 if ($is_low) {
@@ -364,7 +364,7 @@ Proc::Govern - Run child process and govern its various aspects
 
 =head1 VERSION
 
-This document describes version 0.14 of Proc::Govern (from Perl distribution Proc-Govern), released on 2014-12-11.
+This document describes version 0.15 of Proc::Govern (from Perl distribution Proc-Govern), released on 2014-12-12.
 
 =head1 SYNOPSIS
 
@@ -553,14 +553,14 @@ too high and resumed if system load returns to a lower limit.
 =item * load_high_limit => INT|CODE (default: 1.25)
 
 Limit above which program should be suspended, if load watching is enabled. If
-integer, will be compared against L<Sys::LoadAvg>'s LOADAVG_1MIN value.
+integer, will be compared against C<< Unix::Uptime->load >>'s C<$load1> value.
 Alternatively, you can provide a custom routine here, code should return true if
 load is considered too high.
 
 =item * load_low_limit => INT|CODE (default: 0.25)
 
 Limit below which program should resume, if load watching is enabled. If
-integer, will be compared against L<Sys::LoadAvg>'s LOADAVG_1MIN value.
+integer, will be compared against C<< Unix::Uptime->load >>'s C<$load1> value.
 Alternatively, you can provide a custom routine here, code should return true if
 load is considered low.
 

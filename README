@@ -2,8 +2,8 @@ NAME
     Proc::Govern - Run child process and govern its various aspects
 
 VERSION
-    This document describes version 0.14 of Proc::Govern (from Perl
-    distribution Proc-Govern), released on 2014-12-11.
+    This document describes version 0.15 of Proc::Govern (from Perl
+    distribution Proc-Govern), released on 2014-12-12.
 
 SYNOPSIS
     To use via command-line (in most cases):
@@ -181,16 +181,16 @@ FUNCTIONS
     *   load_high_limit => INT|CODE (default: 1.25)
 
         Limit above which program should be suspended, if load watching is
-        enabled. If integer, will be compared against Sys::LoadAvg's
-        LOADAVG_1MIN value. Alternatively, you can provide a custom routine
-        here, code should return true if load is considered too high.
+        enabled. If integer, will be compared against "Unix::Uptime->load"'s
+        $load1 value. Alternatively, you can provide a custom routine here,
+        code should return true if load is considered too high.
 
     *   load_low_limit => INT|CODE (default: 0.25)
 
         Limit below which program should resume, if load watching is
-        enabled. If integer, will be compared against Sys::LoadAvg's
-        LOADAVG_1MIN value. Alternatively, you can provide a custom routine
-        here, code should return true if load is considered low.
+        enabled. If integer, will be compared against "Unix::Uptime->load"'s
+        $load1 value. Alternatively, you can provide a custom routine here,
+        code should return true if load is considered low.
 
     *   load_check_every => INT (default: 10)
 
