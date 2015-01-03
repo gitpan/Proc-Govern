@@ -1,11 +1,5 @@
-NAME
-    Proc::Govern - Run child process and govern its various aspects
-
-VERSION
-    This document describes version 0.15 of Proc::Govern (from Perl
-    distribution Proc-Govern), released on 2014-12-12.
-
 SYNOPSIS
+
     To use via command-line (in most cases):
 
      % govproc \
@@ -30,237 +24,195 @@ SYNOPSIS
      );
 
 DESCRIPTION
-    Proc::Govern is a child process manager. It is meant to be a convenient
-    bundle (a single parent/monitoring process) for functionalities commonly
-    needed when managing a child process. It comes with a command-line
-    interface, govproc.
 
-    Background story: I first created this module to record STDERR output of
-    scripts that I run from cron. The scripts already log debugging
+    Proc::Govern is a child process manager. It is meant to be a convenient
+    bundle (a single parent/monitoring process) for functionalities
+    commonly needed when managing a child process. It comes with a
+    command-line interface, govproc.
+
+    Background story: I first created this module to record STDERR output
+    of scripts that I run from cron. The scripts already log debugging
     information using Log::Any to an autorotated log file (using
     Log::Dispatch::FileRotate, via Log::Any::Adapter::Log4perl, via
-    Log::Any::App). However, when the scripts warn/die, or when the programs
-    that the scripts execute emit messages to STDERR, they do not get
-    recorded. Thus, every script is then run through govproc. From there,
-    govproc naturally gets additional features like timeout, preventing
-    running multiple instances, and so on.
+    Log::Any::App). However, when the scripts warn/die, or when the
+    programs that the scripts execute emit messages to STDERR, they do not
+    get recorded. Thus, every script is then run through govproc. From
+    there, govproc naturally gets additional features like timeout,
+    preventing running multiple instances, and so on.
 
     Currently the following governing functionalities are available:
 
-    *   logging of STDOUT & STDERR output to an autorotated file
+      * logging of STDOUT & STDERR output to an autorotated file
 
-    *   execution time limit
+      * execution time limit
 
-    *   preventing multiple instances from running simultaneously
+      * preventing multiple instances from running simultaneously
 
-    *   load watch
+      * load watch
 
-    *   autorestart
+      * autorestart
 
     In the future the following features are also planned or contemplated:
 
-    *   CPU time limit
+      * CPU time limit
 
-    *   memory limit
+      * memory limit
 
-        With an option to autorestart if process' memory size grow out of
-        limit.
+      With an option to autorestart if process' memory size grow out of
+      limit.
 
-    *   other resource usage limit
+      * other resource usage limit
 
-    *   fork/start multiple processes
+      * fork/start multiple processes
 
-    *   set (CPU) nice level
+      * set (CPU) nice level
 
-    *   set I/O nice level (scheduling priority/class)
+      * set I/O nice level (scheduling priority/class)
 
-    *   limit STDIN input, STDOUT/STDERR output?
+      * limit STDIN input, STDOUT/STDERR output?
 
-    *   trap/handle some signals for the child process?
+      * trap/handle some signals for the child process?
 
-    *   set UID/GID?
+      * set UID/GID?
 
-    *   provide daemon functionality?
+      * provide daemon functionality?
 
-    *   provide network server functionality?
+      * provide network server functionality?
 
-        Inspiration: djb's tcpserver.
+      Inspiration: djb's tcpserver.
 
-    *   set/clean environment variables
+      * set/clean environment variables
 
 EXIT CODES
+
     Below is the list of exit codes that Proc::Govern uses:
 
-    *   124
+      * 124
 
-        Timeout. The exit code is also used by timeout.
+      Timeout. The exit code is also used by timeout.
 
-    *   202
+      * 202
 
-        Another instance is already running (when "single_instance" option
-        is true).
+      Another instance is already running (when single_instance option is
+      true).
 
 FUNCTIONS
-  govern_process(%args) => INT
+
+ govern_process(%args) => INT
+
     Run child process and govern its various aspects. It basically uses
     IPC::Run and a loop to check various conditions during the lifetime of
     the child process. Known arguments (required argument is marked with
-    "*"):
+    *):
 
-    *   command* => STR | ARRAYREF
+      * command* => STR | ARRAYREF
 
-        Program to run. Passed to IPC::Run's "start()".
+      Program to run. Passed to IPC::Run's start().
 
-    *   name => STRING
+      * name => STRING
 
-        Should match regex "/\A\w+\z/". Used in several places, e.g. passed
-        as "prefix" in File::Write::Rotate's constructor as well as used as
-        name of PID file.
+      Should match regex /\A\w+\z/. Used in several places, e.g. passed as
+      prefix in File::Write::Rotate's constructor as well as used as name
+      of PID file.
 
-        If not given, will be taken from command.
+      If not given, will be taken from command.
 
-    *   timeout => INT
+      * timeout => INT
 
-        Apply execution time limit, in seconds. After this time is reached,
-        process (and all its descendants) are first sent the TERM signal. If
-        after 30 seconds pass some processes still survive, they are sent
-        the KILL signal.
+      Apply execution time limit, in seconds. After this time is reached,
+      process (and all its descendants) are first sent the TERM signal. If
+      after 30 seconds pass some processes still survive, they are sent the
+      KILL signal.
 
-        The killing is implemented using IPC::Run's "kill_kill()".
+      The killing is implemented using IPC::Run's kill_kill().
 
-        Upon timeout, exit code is set to 124.
+      Upon timeout, exit code is set to 124.
 
-    *   show_stderr => BOOL (default: 1)
+      * show_stderr => BOOL (default: 1)
 
-        Can be used to turn off STDERR output. If you turn this off and set
-        "log_stderr", STDERR output will still be logged but not displayed
-        to screen.
+      Can be used to turn off STDERR output. If you turn this off and set
+      log_stderr, STDERR output will still be logged but not displayed to
+      screen.
 
-    *   log_stderr => HASH
+      * log_stderr => HASH
 
-        Specify logging for STDERR. Logging will be done using
-        File::Write::Rotate. Known hash keys: "dir" (STR, defaults to
-        /var/log, directory, preferably absolute, where the log file(s) will
-        reside, should already exist and be writable, will be passed to
-        File::Write::Rotate's constructor), "size" (INT, also passed to
-        File::Write::Rotate's constructor), "histories" (INT, also passed to
-        File::Write::Rotate's constructor), "period" (STR, also passed to
-        File::Write::Rotate's constructor).
+      Specify logging for STDERR. Logging will be done using
+      File::Write::Rotate. Known hash keys: dir (STR, defaults to /var/log,
+      directory, preferably absolute, where the log file(s) will reside,
+      should already exist and be writable, will be passed to
+      File::Write::Rotate's constructor), size (INT, also passed to
+      File::Write::Rotate's constructor), histories (INT, also passed to
+      File::Write::Rotate's constructor), period (STR, also passed to
+      File::Write::Rotate's constructor).
 
-    *   show_stdout => BOOL (default: 1)
+      * show_stdout => BOOL (default: 1)
 
-        Just like "show_stdout", but for STDOUT.
+      Just like show_stdout, but for STDOUT.
 
-    *   log_stdout => HASH
+      * log_stdout => HASH
 
-        Just like "log_stderr", but for STDOUT.
+      Just like log_stderr, but for STDOUT.
 
-    *   single_instance => BOOL
+      * single_instance => BOOL
 
-        If set to true, will prevent running multiple instances
-        simultaneously. Implemented using Proc::PID::File. You will also
-        normally have to set "pid_dir", unless your script runs as root, in
-        which case you can use the default "/var/run".
+      If set to true, will prevent running multiple instances
+      simultaneously. Implemented using Proc::PID::File. You will also
+      normally have to set pid_dir, unless your script runs as root, in
+      which case you can use the default /var/run.
 
-    *   pid_dir => STR (default: /var/run)
+      * pid_dir => STR (default: /var/run)
 
-        Directory to put PID file in. Relevant if "single" is set to true.
+      Directory to put PID file in. Relevant if single is set to true.
 
-    *   on_multiple_instance => STR
+      * on_multiple_instance => STR
 
-        Can be set to 'exit' to silently exit when there is already a
-        running instance. Otherwise, will print an error message 'Program
-        <NAME> already running'.
+      Can be set to 'exit' to silently exit when there is already a running
+      instance. Otherwise, will print an error message 'Program <NAME>
+      already running'.
 
-    *   load_watch => BOOL (default: 0)
+      * load_watch => BOOL (default: 0)
 
-        If set to 1, enable load watching. Program will be suspended when
-        system load is too high and resumed if system load returns to a
-        lower limit.
+      If set to 1, enable load watching. Program will be suspended when
+      system load is too high and resumed if system load returns to a lower
+      limit.
 
-    *   load_high_limit => INT|CODE (default: 1.25)
+      * load_high_limit => INT|CODE (default: 1.25)
 
-        Limit above which program should be suspended, if load watching is
-        enabled. If integer, will be compared against "Unix::Uptime->load"'s
-        $load1 value. Alternatively, you can provide a custom routine here,
-        code should return true if load is considered too high.
+      Limit above which program should be suspended, if load watching is
+      enabled. If integer, will be compared against Unix::Uptime->load's
+      $load1 value. Alternatively, you can provide a custom routine here,
+      code should return true if load is considered too high.
 
-    *   load_low_limit => INT|CODE (default: 0.25)
+      * load_low_limit => INT|CODE (default: 0.25)
 
-        Limit below which program should resume, if load watching is
-        enabled. If integer, will be compared against "Unix::Uptime->load"'s
-        $load1 value. Alternatively, you can provide a custom routine here,
-        code should return true if load is considered low.
+      Limit below which program should resume, if load watching is enabled.
+      If integer, will be compared against Unix::Uptime->load's $load1
+      value. Alternatively, you can provide a custom routine here, code
+      should return true if load is considered low.
 
-    *   load_check_every => INT (default: 10)
+      * load_check_every => INT (default: 10)
 
-        Frequency of load checking, in seconds.
+      Frequency of load checking, in seconds.
 
-    *   restart => BOOL (default: 0)
+      * restart => BOOL (default: 0)
 
-        If set to true, do restart.
+      If set to true, do restart.
 
     Planned arguments: restart_delay, check_alive.
 
     Return value: command exit code.
 
-  govern_process(%args) -> int
-    Arguments ('*' denotes required arguments):
-
-    *   command* => *array|str*
-
-    *   killfam => *bool*
-
-        Instead of kill, use killfam (kill family of process).
-
-        This can be useful e.g. to control load more successfully, if the
-        load-generating processes are the subchildren of the one we're
-        governing.
-
-        This requires "Proc::Killfam" CPAN module, which is installed
-        separately.
-
-    *   load_check_every => *int* (default: 10)
-
-    *   load_high_limit => *code|int*
-
-    *   load_low_limit => *code|int*
-
-    *   load_watch => *bool* (default: 0)
-
-    *   log_stderr => *hash*
-
-        Will be passed as arguments to File::Write::Rotate.
-
-    *   log_stdout => *hash*
-
-        Will be passed as arguments to File::Write::Rotate.
-
-    *   name => *str*
-
-    *   on_multiple_instance => *str*
-
-    *   restart => *bool* (default: 1)
-
-    *   show_stderr => *bool* (default: 1)
-
-    *   show_stdout => *bool* (default: 1)
-
-    *   single_instance => *bool* (default: 0)
-
-    *   timeout => *int*
-
-    Return value:
-
-    Child's exit code (int)
-
 ENVIRONMENT
-  DEBUG => bool
+
+ DEBUG => bool
+
     If set to true, will display debugging output to STDERR, e.g. when
     stopping/starting a process.
 
 FAQ
-  Why use Proc::Govern?
+
+ Why use Proc::Govern?
+
     The main feature this module offers is convenience: it creates a single
     parent process to monitor child process. This fact is more pronounced
     when you need to monitor lots of child processes. If you use, on the
@@ -278,56 +230,16 @@ FAQ
     apparently forks first).
 
 CAVEATS
+
     Not yet tested on Win32.
 
-TODO
-    *   Govern multiple processes instead of just one
-
-        It's only natural that we expand to this, to reduce the number of
-        monitor process.
-
-        We want to be able to set options for all processes or on a
-        per-process basis. For example: when load watching, all processes
-        can be stopped and resumed using the same high/load criteria, but
-        some processes might want to have a different criteria. The same
-        goes with timeout.
-
-        Some options are for a per-process, e.g. capturing stderr.
-
-        If we support multiple commands, e.g. "commands => ['cmd1', ['cmd2',
-        'arg']]" then we'll also need to return exit codes for each command,
-        e.g. "[0, 124]".
-
-        We should exit only after all child processes terminate. But when a
-        child exits, a hook can be defined e.g. "on_child_exit".
-
-    *   Allow specifying time point (instead of duration) for timeout?
-
-        For example, we might want to say "this command should not run past
-        midnight".
-
-        In general, we might also want to allow specifying a coderef for
-        flexible timeout criteria?
-
-    *   Print messages when stopping/resuming due to load control
-
-        Like loadwatch does:
-
-         Fri Mar 14 16:17:52 2014: load too high, stopping.
-         Fri Mar 14 16:18:52 2014: load low, continuing.
-
-    *   Option to not use File::Write::Rotate for logging STDOUT/STDERR
-
-        If command is output-heavy, FWR will become a significant overhead.
-        Unless FWR has the option of skipping logging (I'm contemplating on
-        this) ...
-
 SEE ALSO
+
     Proc::Govern uses IPC::Run at its core.
 
     IPC::Cmd also uses IPC::Run (as well as IPC::Open3 on systems that do
     not have IPC::Run installed or on some archaic systems that do not
-    support IPC::Run) and its "run_forked()" routine also has some of
+    support IPC::Run) and its run_forked() routine also has some of
     Proc::Govern's functionalities like capturing stdout and stderr,
     timeout, hiding (discarding) output. If you only need those
     functionalities, you can use IPC::Cmd as it is a core module.
@@ -336,58 +248,35 @@ SEE ALSO
     functionality (or some of the functionality) of the
     builtins/modules/programs listed below:
 
-    *   Starting/autorestarting
+      * Starting/autorestarting
 
-        djb's supervise, http://cr.yp.to/daemontools/supervise.html
+      djb's supervise, http://cr.yp.to/daemontools/supervise.html
 
-    *   Pausing under high system load
+      * Pausing under high system load
 
-        loadwatch. This program also has the ability to run N copies of
-        program and interactively control stopping/resuming via Unix socket.
+      loadwatch. This program also has the ability to run N copies of
+      program and interactively control stopping/resuming via Unix socket.
 
-        cPanel also includes a program called cpuwatch.
+      cPanel also includes a program called cpuwatch.
 
-    *   Preventing multiple instances of program running simultaneously
+      * Preventing multiple instances of program running simultaneously
 
-        Proc::PID::File, Sys::RunAlone
+      Proc::PID::File, Sys::RunAlone
 
-    *   Execution time limit
+      * Execution time limit
 
-        timeout.
+      timeout.
 
-        alarm() (but alarm() cannot be used to timeout external programs
-        started by system()/backtick).
+      alarm() (but alarm() cannot be used to timeout external programs
+      started by system()/backtick).
 
-        Sys::RunUntil
+      Sys::RunUntil
 
-    *   Logging
+      * Logging
 
-        djb's multilog, http://cr.yp.to/daemontools/multilog.html
+      djb's multilog, http://cr.yp.to/daemontools/multilog.html
 
     Although not really related, Perinci::Sub::Wrapper. This module also
     bundles functionalities like timeout, retries, argument validation, etc
     into a single function wrapper.
-
-HOMEPAGE
-    Please visit the project's homepage at
-    <https://metacpan.org/release/Proc-Govern>.
-
-SOURCE
-    Source repository is at <https://github.com/perlancar/perl-Proc-Govern>.
-
-BUGS
-    Please report any bugs or feature requests on the bugtracker website
-    <https://rt.cpan.org/Public/Dist/Display.html?Name=Proc-Govern>
-
-    When submitting a bug or request, please include a test-file or a patch
-    to an existing test-file that illustrates the bug or desired feature.
-
-AUTHOR
-    perlancar <perlancar@cpan.org>
-
-COPYRIGHT AND LICENSE
-    This software is copyright (c) 2014 by perlancar@cpan.org.
-
-    This is free software; you can redistribute it and/or modify it under
-    the same terms as the Perl 5 programming language system itself.
 

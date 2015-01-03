@@ -1,7 +1,7 @@
 package Proc::Govern;
 
-our $DATE = '2014-12-12'; # DATE
-our $VERSION = '0.15'; # VERSION
+our $DATE = '2015-01-03'; # DATE
+our $VERSION = '0.16'; # VERSION
 
 use 5.010001;
 use strict;
@@ -64,6 +64,7 @@ sub _kill {
 
 $SPEC{govern_process} = {
     v => 1.1,
+    summary => 'Run child process and govern its various aspects',
     args => {
         name => {
             schema => 'str*',
@@ -364,7 +365,7 @@ Proc::Govern - Run child process and govern its various aspects
 
 =head1 VERSION
 
-This document describes version 0.15 of Proc::Govern (from Perl distribution Proc-Govern), released on 2014-12-12.
+This document describes version 0.16 of Proc::Govern (from Perl distribution Proc-Govern), released on 2015-01-03.
 
 =head1 SYNOPSIS
 
@@ -581,11 +582,13 @@ Return value: command exit code.
 
 =head2 govern_process(%args) -> int
 
+Run child process and govern its various aspects.
+
 Arguments ('*' denotes required arguments):
 
 =over 4
 
-=item * B<command>* => I<array|str>
+=item * B<command>* => I<str|array[str]>
 
 =item * B<killfam> => I<bool>
 
@@ -598,9 +601,9 @@ This requires C<Proc::Killfam> CPAN module, which is installed separately.
 
 =item * B<load_check_every> => I<int> (default: 10)
 
-=item * B<load_high_limit> => I<code|int>
+=item * B<load_high_limit> => I<int|code>
 
-=item * B<load_low_limit> => I<code|int>
+=item * B<load_low_limit> => I<int|code>
 
 =item * B<load_watch> => I<bool> (default: 0)
 
@@ -628,10 +631,7 @@ Will be passed as arguments to File::Write::Rotate.
 
 =back
 
-Return value:
-
-Child's exit code (int)
-
+Return value: Child's exit code (int)
 =head1 ENVIRONMENT
 
 =head2 DEBUG => bool
@@ -662,50 +662,6 @@ forks first).
 =head1 CAVEATS
 
 Not yet tested on Win32.
-
-=head1 TODO
-
-=over
-
-=item * Govern multiple processes instead of just one
-
-It's only natural that we expand to this, to reduce the number of monitor
-process.
-
-We want to be able to set options for all processes or on a per-process basis.
-For example: when load watching, all processes can be stopped and resumed using
-the same high/load criteria, but some processes might want to have a different
-criteria. The same goes with timeout.
-
-Some options are for a per-process, e.g. capturing stderr.
-
-If we support multiple commands, e.g. C<< commands => ['cmd1', ['cmd2', 'arg']]
->> then we'll also need to return exit codes for each command, e.g. C<< [0, 124]
->>.
-
-We should exit only after all child processes terminate. But when a child exits,
-a hook can be defined e.g. C<on_child_exit>.
-
-=item * Allow specifying time point (instead of duration) for timeout?
-
-For example, we might want to say "this command should not run past midnight".
-
-In general, we might also want to allow specifying a coderef for flexible
-timeout criteria?
-
-=item * Print messages when stopping/resuming due to load control
-
-Like B<loadwatch> does:
-
- Fri Mar 14 16:17:52 2014: load too high, stopping.
- Fri Mar 14 16:18:52 2014: load low, continuing.
-
-=item * Option to not use File::Write::Rotate for logging STDOUT/STDERR
-
-If command is output-heavy, FWR will become a significant overhead. Unless FWR
-has the option of skipping logging (I'm contemplating on this) ...
-
-=back
 
 =head1 SEE ALSO
 
@@ -778,7 +734,7 @@ perlancar <perlancar@cpan.org>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2014 by perlancar@cpan.org.
+This software is copyright (c) 2015 by perlancar@cpan.org.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
